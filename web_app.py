@@ -4,19 +4,26 @@ Scrapes realtime NCTX bustimes and returns
 a JSON object.
 """
 import os
-from gazpacho import get, Soup
 from flask import Flask, jsonify
 from flask_cors import CORS
-
+from gazpacho import get, Soup
+import requests
 
 APP = Flask(__name__)
 APP.secret_key = os.environ.get('SECRET_KEY')
 cors = CORS(APP)
 STOP_URL = "https://www.nctx.co.uk/stops/%s"
 
+DARK_SKY_KEY = os.environ.get('DARK_SKY_KEY')
+DARK_SKY_URL = "https://api.darksky.net/forecast/%s/%s,%s"
 
-@APP.route('/stop/<stopid>')
-def stop(stopid=None):
+TRANSPORT_APP = os.environ.get('TRANSPORT_APP')
+TRANSPORT_KEY = os.environ.get('TRANSPORT_KEY')
+TRANSPORT_URL = "http://transportapi.com/v3/uk/places.json?query=%s&type=bus_stop&app_id=%s&app_key=%s"
+
+
+@APP.route('/times/<stopid>')
+def times(stopid=None):
     """
     GET request returns the next 5
     bus numbers, destinations, and times.
@@ -30,20 +37,64 @@ def stop(stopid=None):
             'p', {'class': 'single-visit__name'}, partial=False)
         destinations = soup.find(
             'p', {'class': 'single-visit__description'}, partial=False)
-        times = soup.find(
+        due = soup.find(
             'div', {'class': 'single-visit__time--'}, partial=True)
         buses = []
-        if len(numbers) == len(destinations) == len(times):
+        if len(numbers) == len(destinations) == len(due):
             for i, bus in enumerate(numbers):
-                print(bus)
                 buses.append(
                     {'number': numbers[i].text,
                      'destination': destinations[i].text,
-                     'due': times[i].text})
+                     'due': due[i].text})
         return jsonify(buses=buses[0:5])
 
     except Exception:
         return jsonify(buses=[])
+
+
+@APP.route('/weather/<stopid>')
+def weather(stopid=None):
+    """
+    Uses transport API to get lat/lon
+    cooridnates for a bus based on its
+    ATCO code. Then gets the daily forecast
+    for that location and the current
+    temperature, wind speed and bearing.
+    """
+    bus_stop_request = requests.get(
+        TRANSPORT_URL % (stopid, TRANSPORT_APP, TRANSPORT_KEY))
+    if bus_stop_request.status_code == 200:
+        stop = bus_stop_request.json().get('member')[0]
+        lat = stop.get('latitude')
+        lon = stop.get('longitude')
+        weather_request = requests.get(DARK_SKY_URL % (DARK_SKY_KEY, lat, lon))
+        if weather_request.status_code == 200:
+            forecast = weather_request.json().get('daily').get('summary')
+            temperature = (weather_request.json().get(
+                'currently').get('temperature')-32)*(5/9)
+            wind_speed = (weather_request.json().get(
+                'currently').get('windSpeed'))
+            wind_bearing = deg_to_compass(weather_request.json().get(
+                'currently').get('windBearing'))
+            return jsonify(forecast=forecast,
+                temperature=temperature,
+                windSpeed=wind_speed,
+                windBearing=wind_bearing)
+        else:
+            return "Unable to find weather"
+    else:
+        return "Unable to locate bus stop"
+
+
+def deg_to_compass(num):
+    """
+    Takes a bearing in degrees (0-360)
+    and returns a compass direction.
+    """
+    index = int((num/22.5)+.5)
+    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                  "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    return directions[(index % 16)]
 
 
 if __name__ == '__main__':
