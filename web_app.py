@@ -8,7 +8,7 @@ from flask_cors import CORS
 from gazpacho import get, Soup
 import requests
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_folder='./build', static_url_path='/')
 APP.secret_key = os.environ.get('SECRET_KEY')
 cors = CORS(APP)
 STOP_URL = "https://www.nctx.co.uk/stops/%s"
@@ -20,6 +20,10 @@ TRANSPORT_APP = os.environ.get('TRANSPORT_APP')
 TRANSPORT_KEY = os.environ.get('TRANSPORT_KEY')
 TRANSPORT_URL = "http://transportapi.com/v3/uk/places.json?query=%s&type=bus_stop&app_id=%s&app_key=%s"
 
+
+@APP.route('/')
+def index():
+    return APP.send_static_file('index.html')
 
 @APP.route('/times/<stopid>')
 def times(stopid=None):
