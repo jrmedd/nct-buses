@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3
 """
 Scrapes realtime NCTX bustimes and returns
 a JSON object.
@@ -74,8 +73,8 @@ def weather(stopid=None):
                 'currently').get('temperature')-32)*(5/9)
             wind_speed = (weather_request.json().get(
                 'currently').get('windSpeed'))
-            wind_bearing = deg_to_compass(weather_request.json().get(
-                'currently').get('windBearing'))
+            wind_bearing = weather_request.json().get(
+                'currently').get('windBearing')
             return jsonify(forecast=forecast,
                 temperature=temperature,
                 windSpeed=wind_speed,

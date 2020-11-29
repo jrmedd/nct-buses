@@ -11,3 +11,5 @@ gazpacho == 1.1
 
 # nct_buses/web_app.py: 10
 requests == 2.24.0
+
+gunicorn==19.9.0
