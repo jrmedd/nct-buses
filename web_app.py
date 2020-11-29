@@ -3,12 +3,12 @@ Scrapes realtime NCTX bustimes and returns
 a JSON object.
 """
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from gazpacho import get, Soup
 import requests
 
-APP = Flask(__name__, static_folder='./build', static_url_path='/')
+APP = Flask(__name__, static_folder='./frontend', static_url_path='/')
 APP.secret_key = os.environ.get('SECRET_KEY')
 cors = CORS(APP)
 STOP_URL = "https://www.nctx.co.uk/stops/%s"
