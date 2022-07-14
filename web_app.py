@@ -13,8 +13,8 @@ APP.secret_key = os.environ.get('SECRET_KEY')
 cors = CORS(APP)
 STOP_URL = "https://www.nctx.co.uk/stops/%s"
 
-DARK_SKY_KEY = os.environ.get('DARK_SKY_KEY')
-DARK_SKY_URL = "https://api.darksky.net/forecast/%s/%s,%s"
+WEATHER_KEY = os.environ.get('WEATHER_KEY')
+WEATHER_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&appid=%s&units=metric"
 
 TRANSPORT_APP = os.environ.get('TRANSPORT_APP')
 TRANSPORT_KEY = os.environ.get('TRANSPORT_KEY')
@@ -77,18 +77,22 @@ def weather(stopid=None):
         stop = bus_stop_request.json().get('member')[0]
         lat = stop.get('latitude')
         lon = stop.get('longitude')
-        weather_request = requests.get(DARK_SKY_URL % (DARK_SKY_KEY, lat, lon))
+        weather_request = requests.get(WEATHER_URL % (lat, lon, WEATHER_KEY))
+        print(WEATHER_URL % (lat, lon, WEATHER_KEY))
         if weather_request.status_code == 200:
-            forecast = weather_request.json().get('daily').get('summary')
-            temperature = (weather_request.json().get(
-                'currently').get('temperature')-32)*(5/9)
-            wind_speed = (weather_request.json().get(
-                'currently').get('windSpeed'))
+            forecast = weather_request.json().get(
+              'current').get('weather')[0].get(
+                'description'
+              )
+            temperature = weather_request.json().get(
+                'current').get('temp')
+            wind_speed = weather_request.json().get(
+                'current').get('wind_speed') * 2.23694
             wind_bearing = weather_request.json().get(
-                'currently').get('windBearing')
+                'current').get('wind_deg')
             return jsonify(forecast=forecast,
                            temperature=temperature,
-                           windSpeed=wind_speed,
+                           windSpeed=f'{wind_speed:0.2f}',
                            windBearing=wind_bearing)
         else:
             return "Unable to find weather"
