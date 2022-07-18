@@ -6,4 +6,4 @@ While [Nottingham City Transport only have a limited Open Data](https://www.nctx
 
 ## Usage
 
-For development and testing, clone this repo, install dependencies using `python3 -m pip install -r requirements.txt`, and start the dev server using `python3 web_app.py`. One the server is running, get [your desired stop ID from NCTX](https://www.nctx.co.uk/open-data/network/current) and you can request the next 5 bus times using http://localhost:5000/stop/[stopID]
+For development and testing, clone this repo, install dependencies using `python3 -m pip install -r requirements.txt`, and start the dev server using `python3 web_app.py`. One the server is running, get [your desired stop ID from NCTX](https://www.nctx.co.uk/open-data/network/current) and you can request the next 5 bus times using http://localhost:5000/times/[stopID]
