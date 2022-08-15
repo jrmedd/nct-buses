@@ -3,7 +3,6 @@ Scrapes realtime NCTX bustimes and returns
 a JSON object.
 """
 from datetime import datetime, timedelta, tzinfo
-from math import exp
 import os
 from flask import Flask, jsonify, session
 from flask_cors import CORS
@@ -91,7 +90,6 @@ def weather(stopid=None):
         return "Unable to locate bus stop"
     lat = cached.get('lat')
     lon = cached.get('lon')
-    print(session)
     if lat and lon:
       weather_request = requests.get(DARK_SKY_URL % (DARK_SKY_KEY, lat, lon))
       if weather_request.status_code == 200:
