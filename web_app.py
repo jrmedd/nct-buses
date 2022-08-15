@@ -14,8 +14,8 @@ APP.secret_key = os.environ.get('SECRET_KEY')
 cors = CORS(APP)
 STOP_URL = "https://www.nctx.co.uk/stops/%s"
 
-DARK_SKY_KEY = os.environ.get('DARK_SKY_KEY')
-DARK_SKY_URL = "https://api.darksky.net/forecast/%s/%s,%s"
+WEATHER_KEY = os.environ.get('WEATHER_KEY')
+WEATHER_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&appid=%s&units=metric"
 
 TRANSPORT_APP = os.environ.get('TRANSPORT_APP')
 TRANSPORT_KEY = os.environ.get('TRANSPORT_KEY')
