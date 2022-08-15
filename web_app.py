@@ -2,8 +2,10 @@
 Scrapes realtime NCTX bustimes and returns
 a JSON object.
 """
+from datetime import datetime, timedelta, tzinfo
+from math import exp
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, session
 from flask_cors import CORS
 from gazpacho import get, Soup
 import requests
@@ -71,29 +73,42 @@ def weather(stopid=None):
     for that location and the current
     temperature, wind speed and bearing.
     """
-    bus_stop_request = requests.get(
-        TRANSPORT_URL % (stopid, TRANSPORT_APP, TRANSPORT_KEY))
-    if bus_stop_request.status_code == 200:
-        stop = bus_stop_request.json().get('member')[0]
-        lat = stop.get('latitude')
-        lon = stop.get('longitude')
-        weather_request = requests.get(DARK_SKY_URL % (DARK_SKY_KEY, lat, lon))
-        if weather_request.status_code == 200:
-            forecast = weather_request.json().get('daily').get('summary')
-            temperature = (weather_request.json().get(
-                'currently').get('temperature')-32)*(5/9)
-            wind_speed = (weather_request.json().get(
-                'currently').get('windSpeed'))
-            wind_bearing = weather_request.json().get(
-                'currently').get('windBearing')
-            return jsonify(forecast=forecast,
-                           temperature=temperature,
-                           windSpeed=wind_speed,
-                           windBearing=wind_bearing)
-        else:
-            return "Unable to find weather"
-    else:
+    now = datetime.now()
+    cached = session.get(stopid, {'expiry': now - timedelta(hours=24)})
+    now = now.replace(tzinfo=None)
+    expiry = cached.get('expiry').replace(tzinfo=None)
+    if now > expiry:
+      new_expiry = now + timedelta(hours=24)
+      bus_stop_request = requests.get(
+          TRANSPORT_URL % (stopid, TRANSPORT_APP, TRANSPORT_KEY))
+      if bus_stop_request.status_code == 200:
+          stop = bus_stop_request.json().get('member')[0]
+          lat = stop.get('latitude')
+          lon = stop.get('longitude')
+          cached.update({'lat': lat, 'lon': lon, 'expiry': new_expiry})
+          session.update({stopid: cached})
+      else:
         return "Unable to locate bus stop"
+    lat = cached.get('lat')
+    lon = cached.get('lon')
+    print(session)
+    if lat and lon:
+      weather_request = requests.get(DARK_SKY_URL % (DARK_SKY_KEY, lat, lon))
+      if weather_request.status_code == 200:
+          forecast = weather_request.json().get('daily').get('summary')
+          temperature = (weather_request.json().get(
+              'currently').get('temperature')-32)*(5/9)
+          wind_speed = (weather_request.json().get(
+              'currently').get('windSpeed'))
+          wind_bearing = weather_request.json().get(
+              'currently').get('windBearing')
+          return jsonify(forecast=forecast,
+                          temperature=temperature,
+                          windSpeed=wind_speed,
+                          windBearing=wind_bearing)
+      else:
+        return "Unable to find weather"
+   
 
 
 if __name__ == '__main__':
