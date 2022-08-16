@@ -91,18 +91,21 @@ def weather(stopid=None):
     lat = cached.get('lat')
     lon = cached.get('lon')
     if lat and lon:
-      weather_request = requests.get(DARK_SKY_URL % (DARK_SKY_KEY, lat, lon))
+      weather_request = requests.get(WEATHER_URL % (lat, lon, WEATHER_KEY))
       if weather_request.status_code == 200:
-          forecast = weather_request.json().get('daily').get('summary')
-          temperature = (weather_request.json().get(
-              'currently').get('temperature')-32)*(5/9)
-          wind_speed = (weather_request.json().get(
-              'currently').get('windSpeed'))
+          forecast = weather_request.json().get(
+            'current').get('weather')[0].get(
+              'description'
+            )
+          temperature = weather_request.json().get(
+              'current').get('temp')
+          wind_speed = weather_request.json().get(
+              'current').get('wind_speed') * 2.23694
           wind_bearing = weather_request.json().get(
-              'currently').get('windBearing')
+              'current').get('wind_deg')
           return jsonify(forecast=forecast,
                           temperature=temperature,
-                          windSpeed=wind_speed,
+                          windSpeed=f'{wind_speed:0.2f}',
                           windBearing=wind_bearing)
       else:
         return "Unable to find weather"
