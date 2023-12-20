@@ -1,5 +1,5 @@
 """
-Scrapes realtime NCTX bustimes and returns
+Scrapes realtime NCTX bus times and returns
 a JSON object.
 """
 from datetime import datetime, timedelta, tzinfo
