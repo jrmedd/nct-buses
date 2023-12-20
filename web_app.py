@@ -45,11 +45,11 @@ def times(stopid=None):
         html = get(STOP_URL % (stopid))
         soup = Soup(html)
         numbers = soup.find(
-            'p', {'class': 'single-visit__name'}, partial=False)
+            'div', {'class': 'single-visit__name'}, partial=False)
         destinations = soup.find(
-            'p', {'class': 'single-visit__description'}, partial=False)
+            'div', {'class': 'single-visit__description'}, partial=False)
         due = soup.find(
-            'div', {'class': 'single-visit__time--'}, partial=True)
+            'div', {'class': 'single-visit__arrival-time__cell'}, partial=True)
         buses = []
         if len(numbers) == len(destinations) == len(due):
             for i, bus in enumerate(numbers):
