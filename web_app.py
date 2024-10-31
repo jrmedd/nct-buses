@@ -15,7 +15,7 @@ cors = CORS(APP)
 STOP_URL = "https://www.nctx.co.uk/stops/%s"
 
 WEATHER_KEY = os.environ.get('WEATHER_KEY')
-WEATHER_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&appid=%s&units=metric"
+WEATHER_URL = "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&appid=%s&units=metric"
 
 TRANSPORT_APP = os.environ.get('TRANSPORT_APP')
 TRANSPORT_KEY = os.environ.get('TRANSPORT_KEY')
@@ -113,4 +113,4 @@ def weather(stopid=None):
 
 
 if __name__ == '__main__':
-    APP.run(host="0.0.0.0", debug=True)
+    APP.run(host="0.0.0.0", debug=True, port=3000)
