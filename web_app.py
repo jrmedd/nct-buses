@@ -57,10 +57,10 @@ def times(stopid=None):
                     {'number': numbers[i].text,
                      'destination': destinations[i].text,
                      'due': due[i].text})
-        return jsonify(buses=buses[0:5])
+        return jsonify(buses=buses[0:5], html=html)
 
     except Exception:
-        return jsonify(buses=[])
+        return jsonify(buses=[],html=html)
 
 
 @APP.route('/weather/<stopid>')
